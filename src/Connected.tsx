@@ -171,6 +171,14 @@ export const Connected: FC = () => {
     lineHeight: "1.5",
   };
 
+  const hashLinkStyle = {
+    color: "#5A67D8",
+    textDecoration: "none",
+    ":hover": {
+      textDecoration: "underline",
+    },
+  };
+
   return (
     <div style={pageStyle}>
       <div style={containerStyle}>
@@ -211,6 +219,23 @@ export const Connected: FC = () => {
           </button>
         </form>
 
+        {txHash && (
+          <div style={resultContainerStyle}>
+            <h3 style={sectionTitleStyle}>Transaction sent!</h3>
+            <p style={hashStyle}>
+              <strong>Hash:</strong>{" "}
+              <a
+                href={`https://arbiscan.io/tx/${txHash}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={hashLinkStyle}
+              >
+                {txHash}
+              </a>
+            </p>
+          </div>
+        )}
+
         <div style={formStyle}>
           <p style={sectionTitleStyle}>Sign Message</p>
           <button
@@ -226,15 +251,6 @@ export const Connected: FC = () => {
             Sign message
           </button>
         </div>
-
-        {txHash && (
-          <div style={resultContainerStyle}>
-            <h3 style={sectionTitleStyle}>Transaction sent!</h3>
-            <p style={hashStyle}>
-              <strong>Hash:</strong> {txHash}
-            </p>
-          </div>
-        )}
 
         {signature && (
           <div style={resultContainerStyle}>
