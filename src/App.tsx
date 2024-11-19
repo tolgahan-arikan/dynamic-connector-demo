@@ -14,21 +14,6 @@ const App = () => (
       walletConnectors: [
         () =>
           createSequenceCrossAppConnector(
-            [
-              {
-                name: "Arbitrum One",
-                chainId: 42161,
-                networkId: 42161,
-                iconUrls: ["https://arbitrum.io/favicon.ico"],
-                nativeCurrency: {
-                  name: "Ethereum",
-                  symbol: "ETH",
-                  decimals: 18,
-                },
-                rpcUrls: ["https://arb1.arbitrum.io/rpc"],
-                blockExplorerUrls: ["https://arbiscan.io"],
-              },
-            ],
             {
               id: "sequence",
               name: "Eden Online",

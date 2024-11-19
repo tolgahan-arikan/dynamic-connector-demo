@@ -15,31 +15,7 @@ import { allNetworks, EIP1193Provider } from "@0xsequence/network";
 
 import { ProviderTransport } from "./providerTransport";
 
-type NetworkConfiguration = {
-  name: string;
-  chainId: number | string;
-  networkId: number | string;
-  iconUrls: string[];
-  nativeCurrency: {
-    name: string;
-    symbol: string;
-    decimals: number;
-  };
-  rpcUrls: string[];
-  blockExplorerUrls: string[];
-  bech32Prefix?: string;
-};
-
-type GenericNetwork = Omit<
-  NetworkConfiguration,
-  "chainId" | "networkId" | "shortName" | "chain"
-> & {
-  chainId: number;
-  networkId: number;
-};
-
 export const createSequenceCrossAppConnector = (
-  evmNetworks: GenericNetwork[],
   metadata: WalletMetadata,
   transportConfig: CrossAppTransportConfig
 ) => {
@@ -52,7 +28,6 @@ export const createSequenceCrossAppConnector = (
       ) {
         super({
           ...props,
-          evmNetworks,
           metadata,
           transportConfig,
         });
