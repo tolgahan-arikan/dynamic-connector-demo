@@ -193,8 +193,6 @@ class SequenceWaasTransportProvider
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async request({ method, params }: { method: string; params?: any[] }) {
-    console.log("method", method);
-
     if (method === "eth_requestAccounts") {
       let walletAddress = this.transport.getWalletAddress();
       if (!walletAddress) {

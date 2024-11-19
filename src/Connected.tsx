@@ -75,91 +75,189 @@ export const Connected: FC = () => {
     return null;
   }
 
+  const pageStyle = {
+    maxWidth: "360px",
+    width: "100%",
+    backgroundColor: "#F7FAFC",
+    margin: 0,
+    padding: 0,
+    borderRadius: "8px",
+    marginTop: "16px",
+    boxSizing: "border-box" as const,
+  };
+
+  const containerStyle = {
+    padding: "16px",
+    color: "#2D3748",
+    width: "100%",
+    boxSizing: "border-box" as const,
+  };
+
+  const headingStyle = {
+    color: "#1A365D",
+    fontSize: "20px",
+    marginBottom: "16px",
+    fontWeight: "600" as const,
+    wordBreak: "break-word" as const,
+  };
+
+  const addressStyle = {
+    marginBottom: "24px",
+    color: "#4A5568",
+    fontSize: "14px",
+    padding: "12px",
+    backgroundColor: "#EDF2F7",
+    borderRadius: "8px",
+    wordBreak: "break-all" as const,
+    overflowWrap: "break-word" as const,
+  };
+
+  const formStyle = {
+    display: "flex",
+    flexDirection: "column" as const,
+    gap: "12px",
+    width: "100%",
+    marginBottom: "32px",
+  };
+
+  const inputStyle = {
+    padding: "12px",
+    fontSize: "16px",
+    border: "2px solid #E2E8F0",
+    borderRadius: "8px",
+    color: "#2D3748",
+    backgroundColor: "#FFFFFF",
+    width: "100%",
+    boxSizing: "border-box" as const,
+    outline: "none",
+    minWidth: 0,
+  };
+
+  const buttonStyle = {
+    padding: "12px",
+    fontSize: "16px",
+    cursor: "pointer",
+    backgroundColor: "#5A67D8",
+    color: "#FFFFFF",
+    border: "none",
+    borderRadius: "8px",
+    width: "100%",
+    fontWeight: "600" as const,
+    transition: "background-color 0.2s",
+    whiteSpace: "nowrap" as const,
+  };
+
+  const sectionTitleStyle = {
+    color: "#2D3748",
+    fontSize: "16px",
+    marginBottom: "12px",
+    fontWeight: "600" as const,
+  };
+
+  const resultContainerStyle = {
+    marginTop: "24px",
+    padding: "16px",
+    backgroundColor: "#EDF2F7",
+    borderRadius: "8px",
+    width: "100%",
+    boxSizing: "border-box" as const,
+  };
+
+  const hashStyle = {
+    wordBreak: "break-all" as const,
+    overflowWrap: "break-word" as const,
+    color: "#4A5568",
+    fontSize: "14px",
+    lineHeight: "1.5",
+  };
+
   return (
-    <div style={{ padding: "20px" }}>
-      <h2>Connected Wallet: {primaryWallet.connector.name}</h2>
-      <div style={{ marginBottom: "20px" }}>
-        Address: {primaryWallet.address}
+    <div style={pageStyle}>
+      <div style={containerStyle}>
+        <h2 style={headingStyle}>
+          Connected Wallet: {primaryWallet.connector.name}
+        </h2>
+        <div style={addressStyle}>
+          <strong>Address:</strong> {primaryWallet.address}
+        </div>
+
+        <form onSubmit={onSubmit} style={formStyle}>
+          <p style={sectionTitleStyle}>Send ETH</p>
+          <input
+            name="address"
+            type="text"
+            required
+            placeholder="0x..."
+            style={inputStyle}
+          />
+          <input
+            name="amount"
+            type="text"
+            required
+            placeholder="0.05"
+            style={inputStyle}
+          />
+          <button
+            type="submit"
+            style={buttonStyle}
+            onMouseOver={(e) => {
+              e.currentTarget.style.backgroundColor = "#4C51BF";
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.backgroundColor = "#5A67D8";
+            }}
+          >
+            Send
+          </button>
+        </form>
+
+        <div style={formStyle}>
+          <p style={sectionTitleStyle}>Sign Message</p>
+          <button
+            onClick={signMessage}
+            style={buttonStyle}
+            onMouseOver={(e) => {
+              e.currentTarget.style.backgroundColor = "#4C51BF";
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.backgroundColor = "#5A67D8";
+            }}
+          >
+            Sign message
+          </button>
+        </div>
+
+        {txHash && (
+          <div style={resultContainerStyle}>
+            <h3 style={sectionTitleStyle}>Transaction sent!</h3>
+            <p style={hashStyle}>
+              <strong>Hash:</strong> {txHash}
+            </p>
+          </div>
+        )}
+
+        {signature && (
+          <div style={resultContainerStyle}>
+            <h3 style={sectionTitleStyle}>Message signed!</h3>
+            <p style={hashStyle}>
+              <strong>Signature:</strong> {signature}
+            </p>
+          </div>
+        )}
+
+        {error && (
+          <div
+            style={{
+              ...resultContainerStyle,
+              backgroundColor: "#FFF5F5",
+              borderLeft: "4px solid #F56565",
+            }}
+          >
+            <h3 style={{ ...sectionTitleStyle, color: "#C53030" }}>Error</h3>
+            <p style={{ color: "#C53030", fontSize: "14px" }}>{error}</p>
+          </div>
+        )}
       </div>
-
-      <form
-        onSubmit={onSubmit}
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: "10px",
-          maxWidth: "300px",
-          marginBottom: "30px",
-        }}
-      >
-        <p>Send ETH</p>
-        <input
-          name="address"
-          type="text"
-          required
-          placeholder="0x..."
-          style={{ padding: "8px" }}
-        />
-        <input
-          name="amount"
-          type="text"
-          required
-          placeholder="0.05"
-          style={{ padding: "8px" }}
-        />
-        <button
-          type="submit"
-          style={{
-            padding: "10px 20px",
-            fontSize: "16px",
-            cursor: "pointer",
-          }}
-        >
-          Send
-        </button>
-      </form>
-
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: "10px",
-          maxWidth: "300px",
-        }}
-      >
-        <p>Sign Message</p>
-        <button
-          onClick={signMessage}
-          style={{
-            padding: "10px 20px",
-            fontSize: "16px",
-            cursor: "pointer",
-          }}
-        >
-          Sign message
-        </button>
-      </div>
-
-      {txHash && (
-        <div style={{ marginTop: "20px" }}>
-          <h3>Transaction sent!</h3>
-          <p>Hash: {txHash}</p>
-        </div>
-      )}
-
-      {signature && (
-        <div style={{ marginTop: "20px", maxWidth: "300px" }}>
-          <h3>Message signed!</h3>
-          <p style={{ wordBreak: "break-all" }}>Signature: {signature}</p>
-        </div>
-      )}
-
-      {error && (
-        <div style={{ marginTop: "20px", color: "red" }}>
-          <h3>Error</h3>
-          <p>{error}</p>
-        </div>
-      )}
     </div>
   );
 };

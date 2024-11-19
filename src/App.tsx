@@ -47,7 +47,6 @@ const App = () => (
     <div
       style={{
         width: "100vw",
-        padding: "20px",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
