@@ -13,6 +13,7 @@ export class ProviderTransport {
   private connectionState: ConnectionState = "disconnected";
   private session: SessionData | undefined;
   private walletCheckInterval: number | undefined;
+  private pendingRequests: Set<string> = new Set();
 
   constructor(walletUrl: string) {
     const url = new URL(walletUrl);
@@ -77,6 +78,18 @@ export class ProviderTransport {
     localStorage.setItem("walletSession", JSON.stringify(this.session));
   }
 
+  private tryCloseWalletWindow() {
+    if (this.pendingRequests.size === 0 && this.isWalletOpen()) {
+      setTimeout(() => {
+        // Double check that no new requests came in during the delay
+        if (this.pendingRequests.size === 0) {
+          this.walletWindow?.close();
+          this.walletWindow = null;
+        }
+      }, 500); // Add a small delay to ensure any immediate follow-up requests are captured
+    }
+  }
+
   async connect(): Promise<{ walletAddress: string }> {
     if (this.connectionState === "connected" && this.session) {
       return { walletAddress: this.session.walletAddress };
@@ -85,18 +98,20 @@ export class ProviderTransport {
     this.connectionState = "connecting";
     const connectionId = crypto.randomUUID();
     const connectionRequest = { type: "connection", id: connectionId };
+    this.pendingRequests.add(connectionId);
 
     return new Promise((resolve, reject) => {
       this.callbacks.set(connectionId, (response) => {
+        this.pendingRequests.delete(connectionId);
         if (response.type === "connection" && response.status === "accepted") {
           this.connectionState = "connected";
           this.saveSession(response.walletAddress);
           resolve({ walletAddress: response.walletAddress });
-          this.walletWindow?.close();
+          this.tryCloseWalletWindow();
         } else {
           this.connectionState = "disconnected";
           reject(new Error("Connection rejected"));
-          this.walletWindow?.close();
+          this.tryCloseWalletWindow();
         }
       });
 
@@ -117,6 +132,7 @@ export class ProviderTransport {
 
     const id = crypto.randomUUID();
     const request = { type: "request", id, method, params, chainId };
+    this.pendingRequests.add(id);
 
     return new Promise((resolve, reject) => {
       const sendMessage = async () => {
@@ -125,6 +141,7 @@ export class ProviderTransport {
             await this.openWalletAndPostMessage(request);
           } catch (error) {
             this.callbacks.delete(id);
+            this.pendingRequests.delete(id);
             reject(error);
             return;
           }
@@ -134,17 +151,13 @@ export class ProviderTransport {
       };
 
       this.callbacks.set(id, (response) => {
+        this.pendingRequests.delete(id);
         if (response.error) {
           reject(new Error(response.error.message));
         } else {
           resolve(response.result);
         }
-
-        // Close the wallet window after receiving the response
-        if (this.isWalletOpen()) {
-          this.walletWindow!.close();
-          this.walletWindow = null;
-        }
+        this.tryCloseWalletWindow();
       });
 
       sendMessage().catch(reject);
@@ -204,6 +217,7 @@ export class ProviderTransport {
       callback({ error: { message: "Wallet window was closed" } });
     });
     this.callbacks.clear();
+    this.pendingRequests.clear();
   }
 
   private handleMessage = (event: MessageEvent) => {

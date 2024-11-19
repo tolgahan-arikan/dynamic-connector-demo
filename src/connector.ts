@@ -3,56 +3,107 @@ import {
   EthereumInjectedConnector,
   type IEthereum,
 } from "@dynamic-labs/ethereum";
-import { abstractTestnet } from "viem/chains";
 import { DynamicError } from "@dynamic-labs/utils";
-import { type Chain, logger } from "@dynamic-labs/wallet-connector-core";
-import { findWalletBookWallet } from "@dynamic-labs/wallet-book";
 import {
-  toHex,
-  type Chain as ViemChain,
-  getAddress,
-  TransactionRejectedRpcError,
-} from "viem";
+  WalletMetadata,
+  type Chain,
+} from "@dynamic-labs/wallet-connector-core";
+import { findWalletBookWallet } from "@dynamic-labs/wallet-book";
+import { toHex, getAddress, TransactionRejectedRpcError } from "viem";
 import { ethers } from "ethers";
 import { allNetworks, EIP1193Provider } from "@0xsequence/network";
 
 import { ProviderTransport } from "./providerTransport";
 
-const AGW_APP_ID = "cm04asygd041fmry9zmcyn5o5";
+type NetworkConfiguration = {
+  name: string;
+  chainId: number | string;
+  networkId: number | string;
+  iconUrls: string[];
+  nativeCurrency: {
+    name: string;
+    symbol: string;
+    decimals: number;
+  };
+  rpcUrls: string[];
+  blockExplorerUrls: string[];
+  bech32Prefix?: string;
+};
+
+type GenericNetwork = Omit<
+  NetworkConfiguration,
+  "chainId" | "networkId" | "shortName" | "chain"
+> & {
+  chainId: number;
+  networkId: number;
+};
+
+export const createSequenceCrossAppConnector = (
+  evmNetworks: GenericNetwork[],
+  metadata: WalletMetadata,
+  transportConfig: CrossAppTransportConfig
+) => {
+  return [
+    class extends SequenceCrossAppConnector {
+      constructor(
+        props: EthereumWalletConnectorOpts & {
+          transportConfig: CrossAppTransportConfig;
+        }
+      ) {
+        super({
+          ...props,
+          evmNetworks,
+          metadata,
+          transportConfig,
+        });
+      }
+    },
+  ];
+};
+
+export type CrossAppTransportConfig = {
+  projectAccessKey: string;
+  walletName: string;
+  walletUrl: string;
+  initialChainId: number;
+};
 
 export class SequenceCrossAppConnector extends EthereumInjectedConnector {
-  // isDev = !!params?.isDev;
-  nodesUrl =
-    //isDev
-    // ? "https://dev-nodes.sequence.app" :
-    "https://nodes.sequence.app";
+  private walletName: string;
 
-  sequenceWaasTransportProvider = new SequenceWaasTransportProvider(
-    "AQAAAAAAAEGvyZiWA9FMslYeG_yayXaHnSI",
-    "https://wallet.edenonline.xyz/",
-    1,
-    this.nodesUrl
-  );
+  private nodesUrl = "https://nodes.sequence.app";
+
+  sequenceWaasTransportProvider: SequenceWaasTransportProvider;
+
   /**
    * The name of the wallet connector
    * @override Required override from the base connector class
    */
-  override name = "Sequence";
+  override get name() {
+    return this.walletName;
+  }
 
   /**
    * The constructor for the connector, with the relevant metadata
    * @param props The options for the connector
    */
-  constructor(props: EthereumWalletConnectorOpts) {
+  constructor(
+    props: EthereumWalletConnectorOpts & {
+      transportConfig: CrossAppTransportConfig;
+    }
+  ) {
     super({
       ...props,
-      metadata: {
-        id: "sequence-cross-app",
-        name: "Sequence Cross App",
-        icon: "",
-        // icon: "https://abstract-assets.abs.xyz/icons/light.png",
-      },
     });
+
+    this.walletName = props.transportConfig.walletName;
+
+    this.sequenceWaasTransportProvider = new SequenceWaasTransportProvider(
+      props.transportConfig.projectAccessKey,
+      props.transportConfig.walletUrl,
+      props.transportConfig.initialChainId,
+      this.nodesUrl
+    );
 
     this.wallet = findWalletBookWallet(this.walletBook, this.key);
   }
@@ -71,9 +122,9 @@ export class SequenceCrossAppConnector extends EthereumInjectedConnector {
     });
   }
 
-  override supportedChains: Chain[] = ["ETH", "EVM"];
+  override supportedChains: Chain[] = ["EVM"];
 
-  override connectedChain: Chain = "ETH";
+  override connectedChain: Chain = "EVM";
 
   override findProvider(): IEthereum | undefined {
     return this.sequenceWaasTransportProvider as unknown as IEthereum;
