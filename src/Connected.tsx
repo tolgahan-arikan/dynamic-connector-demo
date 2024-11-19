@@ -148,9 +148,9 @@ export const Connected: FC = () => {
       )}
 
       {signature && (
-        <div style={{ marginTop: "20px" }}>
+        <div style={{ marginTop: "20px", maxWidth: "300px" }}>
           <h3>Message signed!</h3>
-          <p>Signature: {signature}</p>
+          <p style={{ wordBreak: "break-all" }}>Signature: {signature}</p>
         </div>
       )}
 
