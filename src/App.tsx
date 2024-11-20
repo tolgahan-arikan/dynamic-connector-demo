@@ -7,26 +7,24 @@ import { createSequenceCrossAppConnector } from "./connector";
 
 import { Connected } from "./Connected";
 
+const sequenceCrossAppConnector = createSequenceCrossAppConnector(
+  {
+    id: "edenonline",
+    name: "Eden Online",
+    icon: "",
+  },
+  {
+    projectAccessKey: "AQAAAAAAAEGvyZiWA9FMslYeG_yayXaHnSI",
+    walletUrl: "https://wallet.edenonline.xyz/",
+    initialChainId: 42161,
+  }
+);
+
 const App = () => (
   <DynamicContextProvider
     settings={{
       environmentId: "b01b80c1-0610-4d0a-84a5-ba34b371b0f4",
-      walletConnectors: [
-        () =>
-          createSequenceCrossAppConnector(
-            {
-              id: "sequence",
-              name: "Eden Online",
-              icon: "https://pbs.twimg.com/profile_images/1842223593108676608/XYfC4XcH_400x400.jpg",
-            },
-            {
-              projectAccessKey: "AQAAAAAAAEGvyZiWA9FMslYeG_yayXaHnSI",
-              walletName: "sequence",
-              walletUrl: "https://wallet.edenonline.xyz/",
-              initialChainId: 42161,
-            }
-          ),
-      ],
+      walletConnectors: [sequenceCrossAppConnector],
     }}
   >
     <div

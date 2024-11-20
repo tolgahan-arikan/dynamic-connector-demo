@@ -6,7 +6,7 @@ import {
 import { DynamicError } from "@dynamic-labs/utils";
 import {
   WalletMetadata,
-  type Chain,
+  WalletConnectorsMethod,
 } from "@dynamic-labs/wallet-connector-core";
 import { findWalletBookWallet } from "@dynamic-labs/wallet-book";
 import { toHex, getAddress, TransactionRejectedRpcError } from "viem";
@@ -18,14 +18,10 @@ import { ProviderTransport } from "./providerTransport";
 export const createSequenceCrossAppConnector = (
   metadata: WalletMetadata,
   transportConfig: CrossAppTransportConfig
-) => {
-  return [
+): WalletConnectorsMethod => {
+  return () => [
     class extends SequenceCrossAppConnector {
-      constructor(
-        props: EthereumWalletConnectorOpts & {
-          transportConfig: CrossAppTransportConfig;
-        }
-      ) {
+      constructor(props: EthereumWalletConnectorOpts) {
         super({
           ...props,
           metadata,
@@ -38,7 +34,6 @@ export const createSequenceCrossAppConnector = (
 
 export type CrossAppTransportConfig = {
   projectAccessKey: string;
-  walletName: string;
   walletUrl: string;
   initialChainId: number;
 };
@@ -71,7 +66,7 @@ export class SequenceCrossAppConnector extends EthereumInjectedConnector {
       ...props,
     });
 
-    this.walletName = props.transportConfig.walletName;
+    this.walletName = props.metadata!.id;
 
     this.sequenceWaasTransportProvider = new SequenceWaasTransportProvider(
       props.transportConfig.projectAccessKey,
@@ -84,39 +79,15 @@ export class SequenceCrossAppConnector extends EthereumInjectedConnector {
   }
 
   override supportsNetworkSwitching(): boolean {
-    return true;
+    return false;
   }
 
   override isInstalledOnBrowser(): boolean {
     return true;
   }
 
-  override async init(): Promise<void> {
-    this.walletConnectorEventsEmitter.emit("providerReady", {
-      connector: this,
-    });
-  }
-
-  override supportedChains: Chain[] = ["EVM"];
-
-  override connectedChain: Chain = "EVM";
-
   override findProvider(): IEthereum | undefined {
     return this.sequenceWaasTransportProvider as unknown as IEthereum;
-  }
-
-  override async getAddress(): Promise<string | undefined> {
-    const accounts = await this.findProvider()?.request({
-      method: "eth_requestAccounts",
-    });
-    return accounts?.[0] as string | undefined;
-  }
-
-  override async getConnectedAccounts(): Promise<string[]> {
-    return (
-      (await this.findProvider()?.request({ method: "eth_requestAccounts" })) ??
-      []
-    );
   }
 
   override async signMessage(message: string): Promise<string> {
@@ -131,7 +102,7 @@ export class SequenceCrossAppConnector extends EthereumInjectedConnector {
     })) as unknown as string;
   }
 
-  endSession(): Promise<void> {
+  override endSession(): Promise<void> {
     this.sequenceWaasTransportProvider.disconnect();
     return Promise.resolve();
   }
@@ -270,7 +241,7 @@ class SequenceWaasTransportProvider
     return await this.jsonRpcProvider.send(method, params ?? []);
   }
 
-  async getTransaction(txHash: string) {
+  override async getTransaction(txHash: string) {
     return await this.jsonRpcProvider.getTransaction(txHash);
   }
 
