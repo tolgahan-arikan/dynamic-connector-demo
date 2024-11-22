@@ -3,11 +3,10 @@ import {
   DynamicWidget,
 } from "@dynamic-labs/sdk-react-core";
 
-import { createSequenceCrossAppConnector } from "./connector";
-
 import { Connected } from "./Connected";
+import { SequenceCrossAppConnector } from "./connector/src";
 
-const sequenceCrossAppConnector = createSequenceCrossAppConnector(
+const sequenceCrossAppConnector = SequenceCrossAppConnector(
   {
     id: "edenonline",
     name: "Eden Online",
