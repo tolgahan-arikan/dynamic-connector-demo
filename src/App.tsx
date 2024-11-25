@@ -4,7 +4,7 @@ import {
 } from "@dynamic-labs/sdk-react-core";
 
 import { Connected } from "./Connected";
-import { SequenceCrossAppConnector } from "./connector/src";
+import { SequenceCrossAppConnector } from "@dynamic-labs-connectors/sequence-cross-app-evm";
 
 const sequenceCrossAppConnector = SequenceCrossAppConnector(
   {
