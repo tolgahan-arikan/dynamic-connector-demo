@@ -10,7 +10,7 @@ const sequenceCrossAppConnector = SequenceCrossAppConnector(
   {
     id: "edenonline",
     name: "Eden Online",
-    icon: "",
+    icon: "https://iconic.dynamic-static-assets.com/icons/sprite.svg#edenonline",
   },
   {
     projectAccessKey: "AQAAAAAAAEGvyZiWA9FMslYeG_yayXaHnSI",
